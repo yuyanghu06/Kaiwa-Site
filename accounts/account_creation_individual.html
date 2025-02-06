@@ -1,0 +1,22 @@
+<!--
+This is an implementation of the individual account creation portion of the Kaiwa Site
+@author Yuyang Hu
+@author Isaac Zhang
+-->
+<!DOCTYPE html>
+<html lang = eng>
+    <body>
+        <input type = "text" id = "email" placeholder = "Enter your email"> 
+        <input type = "text" id = "username" placeholder = "Enter a username!">
+        <input type = "text" id = "password" placeholder = "Enter a password">
+        <button onclick = "processInput(), location.href = 'account_creation_success.html'"> Submit! </button>
+
+        <script src = "account_scripts/account_class.js"></script>
+        <script> 
+            function processInput(){
+                let account = new Account(document.getElementByID("email"), document.getElementByID("username"), document.getElementByID("password"));
+                localStorage.setItem(account.username, JSON.stringify(account)); 
+            }
+        </script>
+    </body>
+</html>
