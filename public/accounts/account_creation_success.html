@@ -1,0 +1,36 @@
+<!--
+This is the page users are redirected to when their accounts are successfully created
+@author Yuyang Hu
+@author Isaac Zhang
+-->
+<!DOCTYPE html>
+<html lang = eng>
+    <body>
+        <script src = "account_scripts/account_class.js"></script>
+        <script>
+            function displayAccountInfo(){
+                if(localStorage.getItem(document.getElementById("username").value) == null){
+                    document.getElementById("output").innerHTML = "Error, account does not exist";
+                    return;
+                }
+                let account = localStorage.getItem(document.getElementById("username").value);
+                account = JSON.parse(account);
+                document.getElementById("output").innerHTML = account.username + " " + account.email;
+            }
+        </script>
+
+        <h1 style = "font-size: 50px">
+            Success! Please log in
+        </h1>
+
+        <input type = "text" id = "email" placeholder = "Enter your email"> 
+        <input type = "text" id = "username" placeholder = "Enter your username">
+        <input type = "text" id = "password" placeholder = "Enter your password">
+        <button onclick = "displayAccountInfo();">Submit</button>
+
+        <p id = "output">this will change...</p>
+        <button onclick = "location.href = '../index.html'">
+            Home
+        </button>
+    </body>
+</html>
