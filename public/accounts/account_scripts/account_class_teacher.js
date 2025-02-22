@@ -11,3 +11,4 @@ class Account_Teacher{
         this.teacher = true;
     }
 }
+module.exports = Account_Teacher;

@@ -11,7 +11,25 @@ This is an implementation of the individual account creation portion of the Kaiw
             function processInput(){
                 let account = new Account_Student(document.getElementById("email").value, document.getElementById("username").value, document.getElementById("password").value);
                 localStorage.setItem(account.username, JSON.stringify(account)); 
-                location.href = 'account_creation_success.html';
+
+                //sending to backend
+                let success = true;
+                fetch('http://64.188.16.151:25565/register-student',{
+                    method : "POST", 
+                    headers : {
+                        "Content-Type" : "application/json"
+                    },
+                    body: JSON.stringify(account)
+                })
+                .then(response => response.json())
+                .then(data => temp = data)
+                .catch(error => success = false)
+
+                if(success){
+                    location.href = 'account_creation_success.html';
+                }else{
+                    location.href = 'account_creation_failure_student.html';
+                }
             }
         </script>
 

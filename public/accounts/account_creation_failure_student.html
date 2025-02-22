@@ -1,0 +1,21 @@
+<!--
+This is the page users are redirected to when their accounts are successfully created
+@author Yuyang Hu
+@author Isaac Zhang
+-->
+<!DOCTYPE html>
+<html lang = eng>
+    <body>
+        <script src = "account_scripts/account_class.js"></script>
+        <script>
+            function displayAccountInfo(){
+                location.href = "account_creation_individual_student.html";
+            }
+        </script>
+
+        <h1 style = "font-size: 50px">
+            Error, please pick a new username.
+        </h1>
+        <button onclick = "displayAccountInfo();">Go Back</button>
+    </body>
+</html>

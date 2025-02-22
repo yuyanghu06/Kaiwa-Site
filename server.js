@@ -1,19 +1,32 @@
 const express = require('express');
-const session = require('express-session');
-
+const Account_Student = require('./public/accounts/account_scripts/account_class_student.js');
+const Account_Teacher = require('./public/accounts/account_scripts/account_class_teacher.js');
 const app = express();
+const port = 25565;
 
-// Middleware to parse request body
+
+app.use(express.static('public'));
 app.use(express.json());
+teachers = [];
+students = [];
 
-// Configure session middleware
-app.use(session({
-    secret: 'your_secret_key', // Change this to a strong secret
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set secure: true in production with HTTPS
-}));
+app.get('/register-student', (req, res) => {
+    let temp = req.body;
+    let student_temp = new Account_Student(temp.email, temp.username, temp.password);
+    for(i = 0; i < students.length; i++){
+        if(students[i].username === temp.username){
+            res.status(1062).json({message : "error"})
+            return;
+        }
+    }
+    students.push(student_temp);
+    console.log(student_temp.email + student_temp.username);
+    res.json({message : "success"});
+}) 
 
-app.post()
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+
+
+app.listen(port, "0.0.0.0", () => {
+    console.log("Site started on : 64.188.16.151:" + port);
+})

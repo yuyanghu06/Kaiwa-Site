@@ -11,3 +11,5 @@ class Account_Student {
         this.student = true;
     }
 }
+
+module.exports = Account_Student;
