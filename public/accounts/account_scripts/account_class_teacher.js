@@ -11,4 +11,6 @@ class Account_Teacher{
         this.teacher = true;
     }
 }
-module.exports = Account_Teacher;
+if(typeof module === 'object'){
+    module.exports = Account_Teacher;
+}

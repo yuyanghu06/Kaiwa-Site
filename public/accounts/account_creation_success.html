@@ -19,18 +19,14 @@ This is the page users are redirected to when their accounts are successfully cr
             }
         </script>
 
-        <h1 style = "font-size: 50px">
-            Success! Please log in
+        <h1 style = "text-align: center; font-size : 50px">
+            Success! Proceed to login.
         </h1>
-
-        <input type = "text" id = "email" placeholder = "Enter your email"> 
-        <input type = "text" id = "username" placeholder = "Enter your username">
-        <input type = "text" id = "password" placeholder = "Enter your password">
-        <button onclick = "displayAccountInfo();">Submit</button>
-
-        <p id = "output">this will change...</p>
-        <button onclick = "location.href = '../index.html'">
-            Home
-        </button>
+        <div style = "text-align : center; padding: 2px">  
+            <button onclick = "location.href = 'login/account_login.html'">Continue</button>
+            <button onclick = "location.href = '../index.html'">
+                Home
+            </button>
+        </div>
     </body>
 </html>

@@ -10,7 +10,7 @@ app.use(express.json());
 teachers = [];
 students = [];
 
-app.get('/register-student', (req, res) => {
+app.post('/register-student', (req, res) => {
     let temp = req.body;
     let student_temp = new Account_Student(temp.email, temp.username, temp.password);
     for(i = 0; i < students.length; i++){
@@ -20,10 +20,23 @@ app.get('/register-student', (req, res) => {
         }
     }
     students.push(student_temp);
-    console.log(student_temp.email + student_temp.username);
+    console.log(student_temp.email + " " + student_temp.username);
     res.json({message : "success"});
 }) 
 
+app.post('/register-teacher', (req, res) => {
+    let temp = req.body;
+    let teacher_temp = new Account_Teacher(temp.email, temp.username, temp.password);
+    for(i = 0; i < teachers.length; i++){
+        if(teachers[i] === temp.username){
+            res.status(1062).json({message : "error"})
+                return;
+        }
+    }
+    teachers.push(teacher_temp);
+    console.log(teacher_temp.email + " " + teacher_temp.username);
+    res.json({message : "success"})
+})
 
 
 

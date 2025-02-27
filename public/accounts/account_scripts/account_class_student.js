@@ -12,4 +12,6 @@ class Account_Student {
     }
 }
 
-module.exports = Account_Student;
+if (typeof module === 'object') {
+    module.exports = Account_Student;
+}

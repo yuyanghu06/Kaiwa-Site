@@ -13,7 +13,6 @@ This is an implementation of the individual account creation portion of the Kaiw
                 localStorage.setItem(account.username, JSON.stringify(account)); 
 
                 //sending to backend
-                let success = true;
                 fetch('http://64.188.16.151:25565/register-student',{
                     method : "POST", 
                     headers : {
@@ -21,15 +20,17 @@ This is an implementation of the individual account creation portion of the Kaiw
                     },
                     body: JSON.stringify(account)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if(!response.ok){
+                        location.href = 'account_creation_failure_student.html';
+                    }else{
+                        console.log(response.json());
+                        location.href = 'account_creation_success.html';
+                    }
+
+                })
                 .then(data => temp = data)
                 .catch(error => success = false)
-
-                if(success){
-                    location.href = 'account_creation_success.html';
-                }else{
-                    location.href = 'account_creation_failure_student.html';
-                }
             }
         </script>
 
