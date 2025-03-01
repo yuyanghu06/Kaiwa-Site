@@ -1,14 +1,56 @@
 const express = require('express');
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport.local').Strategy;
 const Account_Student = require('./public/accounts/account_scripts/account_class_student.js');
 const Account_Teacher = require('./public/accounts/account_scripts/account_class_teacher.js');
 const app = express();
 const port = 25565;
 
-
 app.use(express.static('public'));
 app.use(express.json());
+app.use(session({
+    secret : 'testing-key',
+    resave : false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 }
+}));
 teachers = [];
 students = [];
+
+passport.use("student-local", new LocalStrategy(
+    async(username, password, done)=>{
+        try{
+            for(i = 0; i < students.length; i++){
+                if(students[i].username === username && students[i].password === password){
+                    const student_tmep = students[i];
+                    return done(null, student_temp);
+                }
+            }
+            return done(null, false, {message : "Error, incorrect username or password"});
+        }
+        catch(err){
+            return done(err);
+        }
+    }
+))
+
+passport.use("teacher-local", new LocalStrategy(
+    async(username, password, done)=>{
+        try{
+            for(i = 0; i < teachers.length; i++){
+                if(teachers[i].username === username && teachers[i].password === password){
+                    const teacher_temp = teachers[i];
+                    return done(null, teacher_temp);
+                }
+            }
+            return done(null, false, {message : "Error, incorrect username or password"});
+        }
+        catch(err){
+            return done(err);
+        }
+    }
+))
 
 app.post('/register-student', (req, res) => {
     let temp = req.body;
@@ -38,7 +80,13 @@ app.post('/register-teacher', (req, res) => {
     res.json({message : "success"})
 })
 
+app.get('/login-student', passport.authenticate('student-local',{
 
+}));
+
+app.get('/login-teacher', passport.authenticate('teacher-local',{
+
+}));
 
 app.listen(port, "0.0.0.0", () => {
     console.log("Site started on : 64.188.16.151:" + port);
