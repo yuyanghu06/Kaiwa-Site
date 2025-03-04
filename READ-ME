@@ -1,0 +1,4 @@
+This file should serve as a general TODO list of all the things we need to implement
+1. Finish backend development - I've detailed a list of all the tasks we still need to do in server.js
+2. Finish frontend integration - Paste in HTML code of the front-end once Ray finishes developing it in Figma
+3. Reorganize our account creation folders - Right now the account creation scripts are a bit messy, we should spend some time reorganizing everything so the folder structure is more easily navigable

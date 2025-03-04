@@ -2,7 +2,7 @@
  * Basic implementation of Kaiwa's Backend
  * @author Yuyang Hu
  * @author Isaac Zhang
- * TODO: Switch to Moongoose for database, implement matching algorithim
+ * TODO: Switch to Moongoose for database, implement matching algorithim, implement deserialization system for logins
  */
 const express = require('express');
 const session = require('express-session');
