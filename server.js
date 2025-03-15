@@ -6,12 +6,16 @@
  */
 const express = require('express');
 const session = require('express-session');
+const http = require('http');
+const { Server } = require('socket.io');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const Account_Student = require('./public/accounts/account_scripts/account_class_student.js');
 const Account_Teacher = require('./public/accounts/account_scripts/account_class_teacher.js');
 const app = express();
 const port = 25565;
+const server = http.createServer(app);
+const io = new Server(server);
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -22,9 +26,12 @@ app.use(session({
     saveUninitialized: false,
     cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 }
 }));
+app.use(passport.initialize());
+app.use(passport.session());
 teachers = [];
 students = [];
 
+//PASSPORT ACCOUNT LOGIN VERIFICATION STRATEGIES
 passport.use("student-local", new LocalStrategy(
     (username, password, done)=>{
         try{
@@ -61,13 +68,50 @@ passport.use("teacher-local", new LocalStrategy(
 ))
 
 passport.serializeUser((user, done)=>{
-    done(null, user.username);
+    const storage = {
+        username : user.username,
+        type : user instanceof Account_Student ? "student" : user instanceof Account_Teacher ? "teacher" : "unknown",
+    };
+    done(null, storage);
 })
 
-passport.deserializeUser((id, done)=>{
-
+passport.deserializeUser((user, done)=>{
+    if(user.type === "student"){
+        for(i = 0; i < students.length; i++){
+            if(user.username === students[i]){
+                done(null, students[i]);
+            }
+        }
+    }else if(user.type === "teacher"){
+        for(i = 0; i < teachers.length; i++){
+            if(user.username === teachers[i]){
+                done(null, teachers[i]);
+            }
+        }
+    }else{
+        done(error);
+    }
 })
 
+function isAuthenticated(req, res, next){
+    console.log(req.user);
+    if(req.isAuthenticated()){
+        return next();
+    }
+    res.redirect("accounts/login/account_login.html")
+}
+//PASSPORT LOGIN CODE
+app.post('/login-student', passport.authenticate("student-local", {
+    successRedirect : "dashboard.html",
+    failureRedirect : "accounts/login/account_login.html"
+}))
+
+app.post('/login-teacher', passport.authenticate('teacher-local',{
+    successRedirect : "dashboard.html",
+    failureRedirect : "accounts/login/account_login.html"
+}))
+
+//REGISTRATION
 app.post('/register-student', (req, res) => {
     let temp = req.body;
     let student_temp = new Account_Student(temp.email, temp.username, temp.password);
@@ -96,16 +140,31 @@ app.post('/register-teacher', (req, res) => {
     res.json({message : "success"})
 })
 
-app.post('/login-student', passport.authenticate("student-local", {
-    successRedirect : "dashboard.html",
-    failureRedirect : "accounts/login/account_login.html"
-}))
+//VIDEO CHAT BACKEND LOGIC
+io.on("connection", (socket) => {
+    socket.on("ice-candidate", (candidate) => { 
+        socket.broadcast.emit("ice-candidate", candidate);
+    });
 
-app.post('/login-teacher', passport.authenticate('teacher-local',{
-    successRedirect : "dashboard.html",
-    failureRedirect : "accounts/login/account_login.html"
-}))
+    socket.on("offer", (offer) => {
+        socket.broadcast.emit("offer", offer);
+    });
 
+    socket.on("answer", (answer) => {
+        socket.broadcast.emit("answer", answer);
+    });
+});
+
+app.get('/video_chat', isAuthenticated, (req, res) => {
+    if(!req.user){
+        console.log("not authenticated");
+    }
+    console.log(req.user);
+    res.sendFile(path.join(__dirname, '/public/matching/video_chat.html'));
+})
+
+
+//STARTING THE SERVER
 app.listen(port, "0.0.0.0", () => {
     console.log("Site started on : 64.188.16.151:" + port);
 })

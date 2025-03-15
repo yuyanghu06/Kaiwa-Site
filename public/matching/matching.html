@@ -1,0 +1,33 @@
+<html>
+    <script>
+        function verify(){
+            fetch('http://64.188.16.151:25565/video_chat', {
+                method : 'get',
+                creditentials : 'include'
+            })
+            .then(response => {
+                    if(response.ok){
+                        html = response.text();
+                    }else{
+                        console.log(response.json());
+                        location.href = '../index.html';
+                    }
+            })
+            .then(html => {
+                document.body.innerHTML = html;
+            })
+        }
+    </script>
+    <body>
+        <div style = "text-align : center; font-size : 50px">
+            <h>
+                Click to match!
+            </h>
+        </div>
+        <div style = "text-align : center">
+            <button onclick = "verify();">
+                Chat!
+            </button>
+        </div>
+    </body>
+</html>
