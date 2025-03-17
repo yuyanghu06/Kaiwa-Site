@@ -7,14 +7,11 @@
             })
             .then(response => {
                     if(response.ok){
-                        html = response.text();
+                        window.location.href = 'http://64.188.16.151:25565/video_chat';
                     }else{
                         console.log(response.json());
                         location.href = '../index.html';
                     }
-            })
-            .then(html => {
-                document.body.innerHTML = html;
             })
         }
     </script>

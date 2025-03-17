@@ -17,12 +17,14 @@
     <script src = "https://cdn.socket.io/4.5.4/socket.io.min.js"></script> <!--Importing Socket-->
     
     <script>
-        const localVideo = document.getElementByID("local");
+        const localVideo = document.getElementById("local");
         const peerVideo = document.getElementById("remote");
-        const newCall = document.getElementByID("call");
-        const disconnect = document.getElementByID("disconnect");
+        const newCall = document.getElementById("call");
+        const disconnect = document.getElementById("disconnect");
 
-        const socket = io("64.188.16.151:25565");
+        const socket = io("64.188.16.151:25565", {
+            transports: ['websocket'], // Use WebSocket only
+        });
 
         let localStream;
         let peerConnection;
@@ -32,47 +34,61 @@
             ],
         };
 
-        async function startCall(){
-            try{
-                localSteam = await navigator.mediaDevices.getUserMedia({video : true, audio : true});
-                localVideo.srcObject = localStream;
-            
-                createPeerConnection();
-                newCall.disabled = true;
-                disconect.disabled = false;
-            }catch(error){
-                console.log("Problem getting user media");
+        async function startCall() {
+    try {
+        console.log("Requesting user media...");
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        console.log("User media obtained:", localStream);
+        localVideo.srcObject = localStream;
+
+        createPeerConnection();
+        newCall.disabled = true;
+        disconnect.disabled = false;
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        console.log("Sending offer:", offer);
+        socket.emit("offer", offer);
+    } catch (error) {
+        console.log("Problem getting user media:", error);
+    }
+}
+
+    async function createPeerConnection() {
+        console.log("Creating peer connection...");
+        peerConnection = new RTCPeerConnection(iceServers);
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+        peerConnection.ontrack = (event) => {
+            console.log("Received remote track:", event.streams[0]);
+            peerVideo.srcObject = event.streams[0];
+        }
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log("Sending ICE candidate:", event.candidate);
+                socket.emit("ice-candidate", event.candidate);
             }
         }
+    }
 
-        async function createPeerConnection(){
-            peerConnection = new RTCPeerConnection(iceServers);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            peerConnection.ontrack = (event) => {
-                peerVideo.srcObject = event.streams[0];
-            }
-            peerConnection.onicecandidate = (event) => {
-                if(event.candidate) {
-                    socket.emit("ice-candidate", event.candidate);
-                }
-            }
-        }
+    socket.on("offer", async (offer) => {
+        console.log("Received offer:", offer);
+        if (!peerConnection) createPeerConnection();
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        console.log("Sending answer:", answer);
+        socket.emit("answer", answer);
+    });
 
-        socket.on("offer", async (offer) => {
-            if (!peerConnection) createPeerConnection();
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            socket.emit("answer", answer);
-        });
+    socket.on("answer", async (answer) => {
+        console.log("Received answer:", answer);
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    });
 
-        socket.on("answer", async (answer) => {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-        });
-
-        socket.on("ice-candidate", async (candidate) => {
-            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-        });
+    socket.on("ice-candidate", async (candidate) => {
+        console.log("Received ICE candidate:", candidate);
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));   
+    });
         
         newCall.addEventListener("click", startCall);
         disconnect.addEventListener("click", () => {
@@ -82,9 +98,18 @@
             }
             localStream.getTracks().forEach(track => track.stop());
             localVideo.srcObject = null;
-            remoteVideo.srcObject = null;
+            peerVideo.srcObject = null;
             startButton.disabled = false;
          disconnect.disabled = true;
+        });
+    navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+            devices.forEach(device => {
+                console.log(`${device.kind}: ${device.label} id = ${device.deviceId}`);
+            });
+        })
+        .catch(err => {
+            console.log("Error enumerating devices:", err);
         });
     </script>
 </html>

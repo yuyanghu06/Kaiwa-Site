@@ -6,8 +6,9 @@
  */
 const express = require('express');
 const session = require('express-session');
+const path = require('path');
 const http = require('http');
-const { Server } = require('socket.io');
+const socketIo = require('socket.io');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const Account_Student = require('./public/accounts/account_scripts/account_class_student.js');
@@ -15,7 +16,9 @@ const Account_Teacher = require('./public/accounts/account_scripts/account_class
 const app = express();
 const port = 25565;
 const server = http.createServer(app);
-const io = new Server(server);
+const io = socketIo(server, {
+    transports : ['websocket'],
+});
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -24,6 +27,7 @@ app.use(session({
     secret : 'testing-key',
     resave : false,
     saveUninitialized: false,
+    store: new session.MemoryStore,
     cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 }
 }));
 app.use(passport.initialize());
@@ -75,23 +79,16 @@ passport.serializeUser((user, done)=>{
     done(null, storage);
 })
 
-passport.deserializeUser((user, done)=>{
-    if(user.type === "student"){
-        for(i = 0; i < students.length; i++){
-            if(user.username === students[i]){
-                done(null, students[i]);
-            }
-        }
-    }else if(user.type === "teacher"){
-        for(i = 0; i < teachers.length; i++){
-            if(user.username === teachers[i]){
-                done(null, teachers[i]);
-            }
-        }
-    }else{
-        done(error);
+passport.deserializeUser((user, done) => {
+    if (user.type === "student") {
+        const student = students.find(s => s.username === user.username);
+        return done(null, student || false);
+    } else if (user.type === "teacher") {
+        const teacher = teachers.find(t => t.username === user.username);
+        return done(null, teacher || false);
     }
-})
+    return done(null, false);
+});
 
 function isAuthenticated(req, res, next){
     console.log(req.user);
@@ -160,7 +157,17 @@ app.get('/video_chat', isAuthenticated, (req, res) => {
         console.log("not authenticated");
     }
     console.log(req.user);
-    res.sendFile(path.join(__dirname, '/public/matching/video_chat.html'));
+    const filePath = path.join(__dirname, 'public', 'matching', 'video_chat.html');
+    console.log(`Sending file: ${filePath}`);
+    
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error(`Error sending file: ${err}`);
+            res.status(err.status).end();
+        } else {
+            console.log('File sent successfully');
+        }
+    });
 })
 
 
